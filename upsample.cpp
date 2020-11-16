@@ -25,41 +25,41 @@
     return temp;
 }
 
+float biHelper1(float a, float b, float c){
+    return(a+(b-a)*c);
+}
+float performBiLerp(float q00 ,float q10 ,float q01 ,float q11 , float transX, float transY ){
+    return biHelper1(biHelper1(q00,q10,transX),biHelper1(q01,q11,transX), transY);
+}
+
 std::vector<int> bilinearInterpolation(std::vector<int> data, int row, int col, int newRow, int newCol){
     std::vector<int> temp(512*512);
-
-    int x_ratio = (row-1)/newRow;
-    int y_ratio = (col-1)/newCol;
-
-    int A , B , C , D;
-    int x, y ,index;
-
-    int x_dif, y_dif;
-
-
-
-    int colorHolder;
-    for(int i =0 ; i< newCol; i++){
-        for(int j = 0 ; j < newRow; j++){
-            x = (int)(x_ratio * j) ;
-            y = (int)(y_ratio * i) ;
-            x_dif = (x_ratio * j) - x ;
-            y_dif = (y_ratio * i) - y ;
-            index = y*row+x;
-
-
-            A = data[index] & 0xff ;
-            B = data[index+1] & 0xff ;
-            C = data[index+row] & 0xff ;
-            D = data[index+row+1] & 0xff ;
-
-
-            colorHolder = (int)(A*(1-x_dif)*(1-y_dif) +  B*(x_dif)*(1-y_dif) +C*(y_dif)*(1-x_dif)   +  D*(x_dif*y_dif)
-            ) ;
-
-            temp.push_back(colorHolder);
+    int x , y;
+    for( x ,y = 0; y < newCol; x++ ){
+        if(x > newRow){
+            x= 0;
+            y++;
         }
+
+    float x_ratio = x / (float)(newRow) * (row-1);
+    float y_ratio = y / (float)(newCol) * (col-1);
+
+    int int_x_ratio = (int)x_ratio;
+    int int_y_ratio = (int)y_ratio;
+
+        std::uint32_t  result = 0;
+
+    int q00 = data[(int_y_ratio*row) +int_x_ratio];
+    int q10 = data[(int_y_ratio*row) +int_x_ratio+1];
+    int q01 = data[(((int_y_ratio)+1)*row) +int_x_ratio];
+    int q11 = data[(((int_y_ratio)+1)*row) +int_x_ratio+1];
+std::uint8_t i;
+        for( i = 0; i < 4; i++ ){
+        result |= ( std::uint8_t)performBiLerp(q00 >> (i*8) &0xFF,q10>> (i*8) &0xFF,q01>> (i*8) &0xFF,q11>> (i*8) &0xFF,x_ratio -int_x_ratio,y_ratio - int_y_ratio ) <<(8*i);
+         }
+    temp[(y*row)+x] = result;
     }
+    std::cout << temp.size() << "\n";
 
     return temp;
 }
