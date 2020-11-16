@@ -26,11 +26,11 @@
 }
 
 std::vector<int> resizeBilinearGray(std::vector<int> pixels, int w, int h, int w2, int h2) {
-    std::vector<int> temp(512*512);
+    std::vector<int> temp;
     int A, B, C, D, x, y, index, gray ;
     float x_ratio = ((float)(w-1))/w2 ;
     float y_ratio = ((float)(h-1))/h2 ;
-    float x_diff, y_diff, ya, yb ;
+    float x_diff, y_diff;
     int offset = 0 ;
     for (int i=0;i<h2;i++) {
         for (int j=0;j<w2;j++) {
