@@ -25,13 +25,6 @@
     return temp;
 }
 
-float biHelper1(float a, float b, float c){
-    return(a+(b-a)*c);
-}
-float performBiLerp(float q00 ,float q10 ,float q01 ,float q11 , float transX, float transY ){
-    return biHelper1(biHelper1(q00,q10,transX),biHelper1(q01,q11,transX), transY);
-}
-
 std::vector<int> resizeBilinearGray(std::vector<int> pixels, int w, int h, int w2, int h2) {
     std::vector<int> temp(512*512);
     int A, B, C, D, x, y, index, gray ;
