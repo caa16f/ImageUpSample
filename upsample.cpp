@@ -32,36 +32,37 @@ float performBiLerp(float q00 ,float q10 ,float q01 ,float q11 , float transX, f
     return biHelper1(biHelper1(q00,q10,transX),biHelper1(q01,q11,transX), transY);
 }
 
-std::vector<int> bilinearInterpolation(std::vector<int> data, int row, int col, int newRow, int newCol){
+std::vector<int> resizeBilinearGray(std::vector<int> pixels, int w, int h, int w2, int h2) {
     std::vector<int> temp(512*512);
-    int x , y;
-    for( x ,y = 0; y < newCol; x++ ){
-        if(x > newRow){
-            x= 0;
-            y++;
+    int A, B, C, D, x, y, index, gray ;
+    float x_ratio = ((float)(w-1))/w2 ;
+    float y_ratio = ((float)(h-1))/h2 ;
+    float x_diff, y_diff, ya, yb ;
+    int offset = 0 ;
+    for (int i=0;i<h2;i++) {
+        for (int j=0;j<w2;j++) {
+            x = (int)(x_ratio * j) ;
+            y = (int)(y_ratio * i) ;
+            x_diff = (x_ratio * j) - x ;
+            y_diff = (y_ratio * i) - y ;
+            index = y*w+x ;
+
+            // range is 0 to 255 thus bitwise AND with 0xff
+            A = pixels[index] & 0xff ;
+            B = pixels[index+1] & 0xff ;
+            C = pixels[index+w] & 0xff ;
+            D = pixels[index+w+1] & 0xff ;
+
+            // Y = A(1-w)(1-h) + B(w)(1-h) + C(h)(1-w) + Dwh
+            gray = (int)(
+                    A*(1-x_diff)*(1-y_diff) +  B*(x_diff)*(1-y_diff) +
+                    C*(y_diff)*(1-x_diff)   +  D*(x_diff*y_diff)
+            ) ;
+
+            temp[offset++] = gray ;
         }
-
-    float x_ratio = x / (float)(newRow) * (row-1);
-    float y_ratio = y / (float)(newCol) * (col-1);
-
-    int int_x_ratio = (int)x_ratio;
-    int int_y_ratio = (int)y_ratio;
-
-        std::uint32_t  result = 0;
-
-    int q00 = data[(int_y_ratio*row) +int_x_ratio];
-    int q10 = data[(int_y_ratio*row) +int_x_ratio+1];
-    int q01 = data[(((int_y_ratio)+1)*row) +int_x_ratio];
-    int q11 = data[(((int_y_ratio)+1)*row) +int_x_ratio+1];
-std::uint8_t i;
-        for( i = 0; i < 4; i++ ){
-        result |= ( std::uint8_t)performBiLerp(q00 >> (i*8) &0xFF,q10>> (i*8) &0xFF,q01>> (i*8) &0xFF,q11>> (i*8) &0xFF,x_ratio -int_x_ratio,y_ratio - int_y_ratio ) <<(8*i);
-         }
-    temp[(y*row)+x] = result;
     }
-    std::cout << temp.size() << "\n";
-
-    return temp;
+    return temp ;
 }
 
 
@@ -96,7 +97,7 @@ int main(int argc , char **argv) {
     int arrOutput[512][512];
 
     std::vector<int> outPut = nnInterpolation(holder);
-    std::vector<int> outPut2 = bilinearInterpolation(holder,256, 256, 512, 512);
+    std::vector<int> outPut3= resizeBilinearGray(holder,256, 256, 512, 512);
 
     std::ifstream f2 ("sample1_original_image.txt");
 
@@ -111,8 +112,7 @@ int main(int argc , char **argv) {
     }
 
     std::cout << l1Distance(test, outPut) << std::endl;
-    std::cout << l1Distance(test, outPut2) << std::endl;
-
+    std::cout << l1Distance(test, outPut3) << std::endl;
 
     std::ofstream outputFile;
 
@@ -127,6 +127,18 @@ int main(int argc , char **argv) {
     }
     outputFile << " ]";
     outputFile << "L1 DISTANCE :" << l1Distance(test, outPut) << "\n";
+
+
+    outputFile << "BILINEAR MATRIX :         "  << "\n";
+    outputFile << "[ ";
+    for(int i = 0; i < 512*512; i++){
+        if(i % 512 == 0 && i != 0){
+            outputFile << "\n";
+        }
+        outputFile << outPut3[i] << ", ";
+    }
+    outputFile << " ]";
+    outputFile << "L1 DISTANCE :" << l1Distance(test, outPut3) << "\n";
     outputFile.close();
     return 0;
 }
