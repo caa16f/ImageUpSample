@@ -62,7 +62,7 @@ int l1Distance(std::vector<int> original , std::vector<int> modified  ){
 
     int distance = 0;
     for(int i = 0; i < 512*512; i++){
-        distance += std::abs((original[i] - modified[i]));
+        distance += std::abs((modified[i] - original[i]));
     }
     return distance;
 }
