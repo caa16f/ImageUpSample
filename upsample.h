@@ -1,6 +1,12 @@
 //
 // Created by caste on 11/15/2020.
 //
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <cmath>
 
 #ifndef UPSAMPLE_UPSAMPLE_H
 #define UPSAMPLE_UPSAMPLE_H

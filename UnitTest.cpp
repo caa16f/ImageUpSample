@@ -22,8 +22,10 @@ std::ifstream f2 ("sample1_input_image.txt");
         std::string holder2;
             while(getline(iss,holder2,',')){
             test.push_back(std::stoi(holder2));
+
             }
     }
+        //Test
         EXPECT_EQ(test.size(),256*256);
 }
 
@@ -87,6 +89,32 @@ TEST(checkUpSampling, CheckingUpSamplingRatioNN){
 }
 
 
+TEST(checkUpSampling, CheckingUpSamplingRatioBI){
+    std::vector<int> data;
+        for(int i = 0; i < 256*256; i++){
+            data.push_back(i%256);
+        }
+        EXPECT_EQ(data.size(),256*256);
+        std::vector<int> result = resizeBilinearGray(data,256,256,512,512);
+        EXPECT_EQ(result.size(),512*512);
+
+        int runningSumOriginal = 0;
+        for(int i = 0 ; i < data.size(); i++){
+             runningSumOriginal += data[i];
+        }
+        int runningSumModified = 0;
+        for(int i = 0 ; i < result.size(); i++){
+            runningSumModified += result[i];
+        }
+
+        float originalAverage = runningSumOriginal / (256*256);
+        float modifiedAverage = runningSumModified / (512*512);
+
+        // The modified average should be less than the original average (due to how we perform the interpolation)
+        EXPECT_LT(modifiedAverage , originalAverage);
+
+
+}
 int main(int argc , char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
