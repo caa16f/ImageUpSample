@@ -6,46 +6,47 @@
 #define UPSAMPLE_UPSAMPLE_HPP
 
 
+
 std::vector<int> nnInterpolation(std::vector<int> data){
     std::vector<int> temp(512*512 );
 
     int x_ratio = (int) ((256 << 16) / 512) +1 ;
     int y_ratio = (int) ((256 << 16) / 512) +1;
 
-    int newX, newY;
+    int newidthX, newidthY;
 
     for(int i = 0; i < 512; i++){
         for(int j = 0; j < 512; j++){
-            newX = ((j*x_ratio) >> 16);
-            newY = ((i*y_ratio) >> 16);
-            temp[(i*512) + j] = data[(newY*256)+newX];
+            newidthX = ((j*x_ratio) >> 16);
+            newidthY = ((i*y_ratio) >> 16);
+            temp[(i*512) + j] = data[(newidthY*256)+newidthX];
         }
     }
 
     return temp;
 }
-std::vector<int> resizeBilinearGray(std::vector<int> pixels, int w, int h, int w2, int h2) {
+std::vector<int> resizeBilinearGray(std::vector<int> pixels, int width, int height, int width2, int height2) {
     std::vector<int> temp(512*512);
     int A, B, C, D, x, y, index, color ;
-    float x_ratio = ((float)(w-1))/w2 ;
-    float y_ratio = ((float)(h-1))/h2 ;
+    float x_ratio = ((float)(width-1))/width2 ;
+    float y_ratio = ((float)(height-1))/height2 ;
     float x_diff, y_diff;
     int offset = 0 ;
-    for (int i=0;i<h2;i++) {
-        for (int j=0;j<w2;j++) {
+    for (int i=0;i<height2;i++) {
+        for (int j=0;j<width2;j++) {
             x = (int)(x_ratio * j) ;
             y = (int)(y_ratio * i) ;
             x_diff = (x_ratio * j) - x ;
             y_diff = (y_ratio * i) - y ;
-            index = y*w+x ;
+            index = y*width+x ;
 
-            // range is 0 to 255 thus bitwise AND with 0xff
+            // range is 0 to 255 thus bitwidthise AND widthith 0xff
             A = pixels[index] & 0xff ;
             B = pixels[index+1] & 0xff ;
-            C = pixels[index+w] & 0xff ;
-            D = pixels[index+w+1] & 0xff ;
+            C = pixels[index+width] & 0xff ;
+            D = pixels[index+width+1] & 0xff ;
 
-            // Y = A(1-w)(1-h) + B(w)(1-h) + C(h)(1-w) + Dwh
+            // Y = A(1-width)(1-height) + B(width)(1-height) + C(height)(1-width) + Dwidthh
             color = (int)(
                     A*(1-x_diff)*(1-y_diff) +  B*(x_diff)*(1-y_diff) +
                     C*(y_diff)*(1-x_diff)   +  D*(x_diff*y_diff)
